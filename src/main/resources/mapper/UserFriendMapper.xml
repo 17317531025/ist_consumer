@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ist.kafka.consumer.dao.UserFriendMapper">
+  <resultMap id="BaseResultMap" type="com.ist.kafka.consumer.domain.UserFriend">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="userid" jdbcType="BIGINT" property="userid" />
+    <result column="status" jdbcType="SMALLINT" property="status" />
+    <result column="grouptype" jdbcType="SMALLINT" property="grouptype" />
+    <result column="friendGroupId" jdbcType="BIGINT" property="friendgroupid" />
+    <result column="fuserid" jdbcType="BIGINT" property="fuserid" />
+    <result column="markname" jdbcType="VARCHAR" property="markname" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, userid, `status`, grouptype, friendGroupId, fuserid, markname, createtime, updatetime
+  </sql>
+  <select id="selectByExample" parameterType="com.ist.kafka.consumer.domain.UserFriendExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from user_friend
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user_friend
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user_friend
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.ist.kafka.consumer.domain.UserFriendExample">
+    delete from user_friend
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.ist.kafka.consumer.domain.UserFriend">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into user_friend (userid, `status`, grouptype, 
+      friendGroupId, fuserid, markname, 
+      createtime, updatetime)
+    values (#{userid,jdbcType=BIGINT}, #{status,jdbcType=SMALLINT}, #{grouptype,jdbcType=SMALLINT}, 
+      #{friendgroupid,jdbcType=BIGINT}, #{fuserid,jdbcType=BIGINT}, #{markname,jdbcType=VARCHAR}, 
+      #{createtime,jdbcType=TIMESTAMP}, #{updatetime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.ist.kafka.consumer.domain.UserFriend">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into user_friend
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userid != null">
+        userid,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="grouptype != null">
+        grouptype,
+      </if>
+      <if test="friendgroupid != null">
+        friendGroupId,
+      </if>
+      <if test="fuserid != null">
+        fuserid,
+      </if>
+      <if test="markname != null">
+        markname,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="updatetime != null">
+        updatetime,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userid != null">
+        #{userid,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=SMALLINT},
+      </if>
+      <if test="grouptype != null">
+        #{grouptype,jdbcType=SMALLINT},
+      </if>
+      <if test="friendgroupid != null">
+        #{friendgroupid,jdbcType=BIGINT},
+      </if>
+      <if test="fuserid != null">
+        #{fuserid,jdbcType=BIGINT},
+      </if>
+      <if test="markname != null">
+        #{markname,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatetime != null">
+        #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ist.kafka.consumer.domain.UserFriendExample" resultType="java.lang.Long">
+    select count(*) from user_friend
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update user_friend
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=BIGINT},
+      </if>
+      <if test="record.userid != null">
+        userid = #{record.userid,jdbcType=BIGINT},
+      </if>
+      <if test="record.status != null">
+        `status` = #{record.status,jdbcType=SMALLINT},
+      </if>
+      <if test="record.grouptype != null">
+        grouptype = #{record.grouptype,jdbcType=SMALLINT},
+      </if>
+      <if test="record.friendgroupid != null">
+        friendGroupId = #{record.friendgroupid,jdbcType=BIGINT},
+      </if>
+      <if test="record.fuserid != null">
+        fuserid = #{record.fuserid,jdbcType=BIGINT},
+      </if>
+      <if test="record.markname != null">
+        markname = #{record.markname,jdbcType=VARCHAR},
+      </if>
+      <if test="record.createtime != null">
+        createtime = #{record.createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updatetime != null">
+        updatetime = #{record.updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update user_friend
+    set id = #{record.id,jdbcType=BIGINT},
+      userid = #{record.userid,jdbcType=BIGINT},
+      `status` = #{record.status,jdbcType=SMALLINT},
+      grouptype = #{record.grouptype,jdbcType=SMALLINT},
+      friendGroupId = #{record.friendgroupid,jdbcType=BIGINT},
+      fuserid = #{record.fuserid,jdbcType=BIGINT},
+      markname = #{record.markname,jdbcType=VARCHAR},
+      createtime = #{record.createtime,jdbcType=TIMESTAMP},
+      updatetime = #{record.updatetime,jdbcType=TIMESTAMP}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.ist.kafka.consumer.domain.UserFriend">
+    update user_friend
+    <set>
+      <if test="userid != null">
+        userid = #{userid,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        `status` = #{status,jdbcType=SMALLINT},
+      </if>
+      <if test="grouptype != null">
+        grouptype = #{grouptype,jdbcType=SMALLINT},
+      </if>
+      <if test="friendgroupid != null">
+        friendGroupId = #{friendgroupid,jdbcType=BIGINT},
+      </if>
+      <if test="fuserid != null">
+        fuserid = #{fuserid,jdbcType=BIGINT},
+      </if>
+      <if test="markname != null">
+        markname = #{markname,jdbcType=VARCHAR},
+      </if>
+      <if test="createtime != null">
+        createtime = #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatetime != null">
+        updatetime = #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.ist.kafka.consumer.domain.UserFriend">
+    update user_friend
+    set userid = #{userid,jdbcType=BIGINT},
+      `status` = #{status,jdbcType=SMALLINT},
+      grouptype = #{grouptype,jdbcType=SMALLINT},
+      friendGroupId = #{friendgroupid,jdbcType=BIGINT},
+      fuserid = #{fuserid,jdbcType=BIGINT},
+      markname = #{markname,jdbcType=VARCHAR},
+      createtime = #{createtime,jdbcType=TIMESTAMP},
+      updatetime = #{updatetime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

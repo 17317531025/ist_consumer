@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ist.kafka.consumer.dao.MsgMapper">
+  <resultMap id="BaseResultMap" type="com.ist.kafka.consumer.domain.Msg">
+    <result column="timeid" jdbcType="BIGINT" property="timeid" />
+    <result column="msgtype" jdbcType="SMALLINT" property="msgtype" />
+    <result column="contenttype" jdbcType="SMALLINT" property="contenttype" />
+    <result column="content" jdbcType="VARCHAR" property="content" />
+    <result column="sender" jdbcType="BIGINT" property="sender" />
+    <result column="no" jdbcType="BIGINT" property="no" />
+    <result column="status" jdbcType="SMALLINT" property="status" />
+    <result column="createtime" jdbcType="TIMESTAMP" property="createtime" />
+    <result column="updatetime" jdbcType="TIMESTAMP" property="updatetime" />
+    <result column="type" jdbcType="SMALLINT" property="type" />
+    <result column="talker" jdbcType="BIGINT" property="talker" />
+    <result column="shopid" jdbcType="INTEGER" property="shopid" />
+    <result column="receiverId" jdbcType="BIGINT" property="receiverId" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    timeid, msgtype, contenttype, content, sender, `no`, `status`, createtime, updatetime, 
+    `type`, talker, shopid
+  </sql>
+  <select id="selectByExample" parameterType="com.ist.kafka.consumer.domain.MsgExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <delete id="deleteByExample" parameterType="com.ist.kafka.consumer.domain.MsgExample">
+    delete from msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.ist.kafka.consumer.domain.Msg">
+    <selectKey keyProperty="timeid" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into msg (msgtype, contenttype, content, 
+      sender, `no`, `status`, 
+      createtime, updatetime, `type`, 
+      talker, shopid)
+    values (#{msgtype,jdbcType=SMALLINT}, #{contenttype,jdbcType=SMALLINT}, #{content,jdbcType=VARCHAR}, 
+      #{sender,jdbcType=BIGINT}, #{no,jdbcType=BIGINT}, #{status,jdbcType=SMALLINT}, 
+      #{createtime,jdbcType=TIMESTAMP}, #{updatetime,jdbcType=TIMESTAMP}, #{type,jdbcType=SMALLINT}, 
+      #{talker,jdbcType=BIGINT}, #{shopid,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.ist.kafka.consumer.domain.Msg">
+    insert into msg
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="timeid != null">
+        timeid,
+      </if>
+      <if test="msgtype != null">
+        msgtype,
+      </if>
+      <if test="contenttype != null">
+        contenttype,
+      </if>
+      <if test="content != null">
+        content,
+      </if>
+      <if test="sender != null">
+        sender,
+      </if>
+      <if test="no != null">
+        `no`,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="createtime != null">
+        createtime,
+      </if>
+      <if test="updatetime != null">
+        updatetime,
+      </if>
+      <if test="type != null">
+        `type`,
+      </if>
+      <if test="talker != null">
+        talker,
+      </if>
+      <if test="shopid != null">
+        shopid,
+      </if>
+      <if test="receiverId != null">
+        receiverId,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="timeid != null">
+        #{timeid,jdbcType=BIGINT},
+      </if>
+      <if test="msgtype != null">
+        #{msgtype,jdbcType=SMALLINT},
+      </if>
+      <if test="contenttype != null">
+        #{contenttype,jdbcType=SMALLINT},
+      </if>
+      <if test="content != null">
+        #{content,jdbcType=VARCHAR},
+      </if>
+      <if test="sender != null">
+        #{sender,jdbcType=BIGINT},
+      </if>
+      <if test="no != null">
+        #{no,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=SMALLINT},
+      </if>
+      <if test="createtime != null">
+        #{createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatetime != null">
+        #{updatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=SMALLINT},
+      </if>
+      <if test="talker != null">
+        #{talker,jdbcType=BIGINT},
+      </if>
+      <if test="shopid != null">
+        #{shopid,jdbcType=INTEGER},
+      </if>
+      <if test="receiverId != null">
+        #{receiverId,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.ist.kafka.consumer.domain.MsgExample" resultType="java.lang.Long">
+    select count(*) from msg
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update msg
+    <set>
+      <if test="record.timeid != null">
+        timeid = #{record.timeid,jdbcType=BIGINT},
+      </if>
+      <if test="record.msgtype != null">
+        msgtype = #{record.msgtype,jdbcType=SMALLINT},
+      </if>
+      <if test="record.contenttype != null">
+        contenttype = #{record.contenttype,jdbcType=SMALLINT},
+      </if>
+      <if test="record.content != null">
+        content = #{record.content,jdbcType=VARCHAR},
+      </if>
+      <if test="record.sender != null">
+        sender = #{record.sender,jdbcType=BIGINT},
+      </if>
+      <if test="record.no != null">
+        `no` = #{record.no,jdbcType=BIGINT},
+      </if>
+      <if test="record.status != null">
+        `status` = #{record.status,jdbcType=SMALLINT},
+      </if>
+      <if test="record.createtime != null">
+        createtime = #{record.createtime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.updatetime != null">
+        updatetime = #{record.updatetime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="record.type != null">
+        `type` = #{record.type,jdbcType=SMALLINT},
+      </if>
+      <if test="record.talker != null">
+        talker = #{record.talker,jdbcType=BIGINT},
+      </if>
+      <if test="record.shopid != null">
+        shopid = #{record.shopid,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update msg
+    set timeid = #{record.timeid,jdbcType=BIGINT},
+      msgtype = #{record.msgtype,jdbcType=SMALLINT},
+      contenttype = #{record.contenttype,jdbcType=SMALLINT},
+      content = #{record.content,jdbcType=VARCHAR},
+      sender = #{record.sender,jdbcType=BIGINT},
+      `no` = #{record.no,jdbcType=BIGINT},
+      `status` = #{record.status,jdbcType=SMALLINT},
+      createtime = #{record.createtime,jdbcType=TIMESTAMP},
+      updatetime = #{record.updatetime,jdbcType=TIMESTAMP},
+      `type` = #{record.type,jdbcType=SMALLINT},
+      talker = #{record.talker,jdbcType=BIGINT},
+      shopid = #{record.shopid,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByParams" parameterType="map">
+    update msg
+    set status=0
+    where status=#{status,jdbcType=SMALLINT} and talker=#{talker,jdbcType=BIGINT}
+  </update>
+</mapper>

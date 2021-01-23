@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <property name="log.dir" value="/home/ist/logs/ist_consumer" />
+    <property name="log.syslogHost" value="172.18.1.112" />
+    <property name="log.syslogPort" value="514" />
+
+    <!-- stdout appender -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+        </filter>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%-21(%date{yyyy-MM-dd HH:mm:ss:SSS}) %-5level %X{reqId} %logger{80} - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="all_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%-21(%date{yyyy-MM-dd HH:mm:ss:SSS}) %-5level %X{reqId} %logger{80} - %msg%n</Pattern>
+        </layout>
+        <File>${log.dir}/all.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/all.%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="all_remote_log" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>${log.syslogHost}</syslogHost>
+        <port>${log.syslogPort}</port>
+        <facility>local0</facility>
+        <suffixPattern>hb-bms %d{yyyy-MM-dd HH:mm:ss:SSS}|-%-5level-|SourceIP=[%X{req.xForwardedFor}],%X{reqId},%msg%n</suffixPattern>
+    </appender>
+
+    <!-- 文件输出日志 ，过滤error ,按天分割 -->
+    <appender name="error_log"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+        <File>${log.dir}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log.dir}/error.%d{yyyy-MM-dd}.log
+            </FileNamePattern>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%date{yyyy-MM-dd HH:mm:ss:SSS}|-%-5level-|UserAgent=[%X{req.userAgent}],SourceIP=[%X{req.xForwardedFor}],%X{reqId},%msg%n</Pattern>
+        </layout>
+    </appender>
+
+	<springProfile name="local">
+        <root level="INFO">
+        	<appender-ref ref="stdout" />
+            <appender-ref ref="all_log" />
+            <appender-ref ref="error_log" />
+        </root>
+    </springProfile>
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="stdout" />
+            <appender-ref ref="all_log" />
+            <appender-ref ref="error_log" />
+        </root>
+    </springProfile>
+    <springProfile name="test">
+        <root level="INFO">
+            <appender-ref ref="all_log" />
+            <appender-ref ref="error_log" />
+        </root>
+    </springProfile>
+    <springProfile name="pro">
+        <root level="INFO">
+            <appender-ref ref="all_log" />
+            <appender-ref ref="error_log" />
+        </root>
+    </springProfile>
+
+
+</configuration>
