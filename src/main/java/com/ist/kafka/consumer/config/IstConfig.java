@@ -19,4 +19,7 @@ public class IstConfig {
     private String kafkaTopic;
     @Value("${kafka.listener.sleepSwitch:0}")
     private Integer listenSleepSwitch;
+
+    @Value("${ist.svc.url}")
+    private String istSvcUrl;
 }

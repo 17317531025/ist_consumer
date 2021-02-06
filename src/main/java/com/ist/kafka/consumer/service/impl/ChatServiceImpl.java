@@ -3,6 +3,7 @@ package com.ist.kafka.consumer.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.JsonObject;
+import com.ist.kafka.consumer.common.CodeConstant;
 import com.ist.kafka.consumer.common.ResultConstant;
 import com.ist.kafka.consumer.common.pojo.ResultVO;
 import com.ist.kafka.consumer.common.util.*;
@@ -15,13 +16,14 @@ import com.ist.kafka.consumer.dao.UserFriendMapper;
 import com.ist.kafka.consumer.domain.Msg;
 import com.ist.kafka.consumer.domain.MsgExample;
 import com.ist.kafka.consumer.domain.UserFriend;
+import com.ist.kafka.consumer.push.PushApi;
 import com.ist.kafka.consumer.service.ChatService;
-import io.netty.channel.Channel;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -47,6 +49,8 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
     private IstConfig istConfig;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private PushApi pushApi;
 
     @Override
     public List<MsgData> queryByParams(Map<String, Object> params) {
@@ -138,6 +142,7 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                     for(int j=0;j<len;j++){
                         String receiverId = message.substring(55+15*j,(55+15*j)+12);
                         String sendMessageUrl = (String) redisUtil.get(RedisKeyUtil.getUIDWebSocketURL(receiverId));
+                        boolean isPush = false;
                         if (StringUtils.isNotBlank(sendMessageUrl)) {
                             try {
                                 long s = System.currentTimeMillis();
@@ -150,14 +155,30 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                                 if (!ResultConstant.SUCCESS_CODE.equals(resultJson.get("code").getAsString())){
                                     //插入离线消息
                                     insertOfflineMsg(message, receiverId);
+                                    isPush = true;
+                                    logger.info("offine:" + receiverId);
                                 }
                             }catch (Exception e){
                                 logger.error("sendMessage",e);
                             }
                         } else {
+                            isPush = true;
                             logger.info("offine:" + receiverId);
                             //插入离线消息
                             insertOfflineMsg(message, receiverId);
+                        }
+                        if (isPush){
+                            //推送服务
+                            //调svc服务获取cid
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("userId",receiverId);
+                            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(istConfig.getIstSvcUrl()+ CodeConstant.IstSvc.USER_QUERY_CLIENT_ID, jsonObject, String.class);
+                            String body = stringResponseEntity.getBody();
+                            JSONObject bodyJsonObject = JSONObject.parseObject(body);
+                            if (ResultConstant.SUCCESS_CODE.equals(bodyJsonObject.getString("code")) && StringUtils.isNotBlank(bodyJsonObject.getString("data"))){
+                                String clientId = bodyJsonObject.getString("data");
+                                pushApi.push(clientId,1);
+                            }
                         }
                     }
 //                }else{

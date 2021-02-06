@@ -23,5 +23,6 @@ public class CodeConstant {
     }
     public interface IstSvc{
         public static final String USER_VERIFY_TOKEN = "user/userVerifyToken";
+        public static final String USER_QUERY_CLIENT_ID = "user/queryUserClientIdByUserId";
     }
 }
