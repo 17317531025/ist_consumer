@@ -1,5 +1,6 @@
 package com.ist.kafka.consumer.push;
 
+import com.alibaba.fastjson.JSONObject;
 import com.getui.push.v2.sdk.ApiHelper;
 import com.getui.push.v2.sdk.GtApiConfiguration;
 import com.getui.push.v2.sdk.common.ApiResult;
@@ -43,8 +44,40 @@ public final class PushApi {
         // 实例化ApiHelper对象，用于创建接口对象
         apiHelper = ApiHelper.build(apiConfiguration);
     }
-    public void push(String clientId,Integer num) {
+    public void push(String clientId, Integer num,  String message,String receiveId) {
+        JSONObject jsonObject = JSONObject.parseObject(message);
+        Integer contentType = jsonObject.getShort("contentType").intValue();
+        String senderName = jsonObject.getString("senderName");
+        StringBuilder sbContent = new StringBuilder();
+        JSONObject contentJson = jsonObject.getJSONObject("content");
+        switch (contentType){
+            case 1:
+                String text = contentJson.getString("text");
+                if (text.length()<=20){
+                    sbContent.append("发送了:" + text);
+                }
+                else
+                {
+                    sbContent.append("发送了:" + text.substring(0,20));
+                }
+                break;
+            case 3:
+                sbContent.append("[图片]");
+                break;
+            case 4:
+                sbContent.append("[语音]");
+                break;
+            case 5:
+                sbContent.append("[视频]");
+                break;
+            case 6:
+                sbContent.append("[红包]");
+                break;
+            default:
+                sbContent.append(contentJson.getString("text").substring(0,20));
+                break;
 
+        }
         // 创建对象，建议复用。目前有PushApi、StatisticApi、UserApi
         com.getui.push.v2.sdk.api.PushApi pushApi = apiHelper.creatApi(com.getui.push.v2.sdk.api.PushApi.class);
 
@@ -54,11 +87,11 @@ public final class PushApi {
         pushDTO.setRequestId(System.currentTimeMillis() + "");
         Settings settings = new Settings();
         Strategy strategy = new Strategy();
-        strategy.setDef(4);
+        strategy.setDef(2);
         settings.setStrategy(strategy);
         pushDTO.setSettings(settings);
-        String title = "消息";
-        String body = "来消息啦";
+        String title = senderName;
+        String body = sbContent.toString();
         //厂商推送消息参数
         IosDTO iosDTO = new IosDTO();
         Aps aps = new Aps();
@@ -83,8 +116,8 @@ public final class PushApi {
         thirdNotification.setTitle(title);
         thirdNotification.setBody(body);
         thirdNotification.setClickType("startapp");
-        thirdNotification.setIntent("intent:#Intent;action=android.intent.action.oppopush;launchFlags=0x14000000;component=com.brofarm.app/io.dcloud.PandoraEntry;S.UP-OL-SU=true;S.title=消息;S.content=来消息啦;S.payload=test;end");
-        thirdNotification.setPayload("{\"title\":\"消息\"}");
+        thirdNotification.setIntent("intent:#Intent;action=android.intent.action.oppopush;launchFlags=0x14000000;component=com.brofarm.app/io.dcloud.PandoraEntry;S.UP-OL-SU=true;S.title="+title+";S.content="+body+";S.payload=test;end");
+        thirdNotification.setPayload("{\"title\":\""+title+"\"}");
         Map<String, Map<String, Object>> options = new HashMap<>();
         Map<String, Object> all = new HashMap<>();
         all.put("key","value");
@@ -101,11 +134,11 @@ public final class PushApi {
 //        pushMessage.setTransmission("sss");
         GTNotification notification = new GTNotification();
         pushMessage.setNotification(notification);
-        notification.setTitle("test");
-        notification.setBody("来消息啦");
+        notification.setTitle(title);
+        notification.setBody(body);
         notification.setClickType("startapp");
         notification.setUrl("https://www.getui.com");
-        notification.setBadgeAddNum("2");
+        notification.setBadgeAddNum(num+"");
         // 设置接收人信息
         Audience audience = new Audience();
         pushDTO.setAudience(audience);
@@ -114,10 +147,9 @@ public final class PushApi {
         // 进行cid单推
         ApiResult<Map<String, Map<String, String>>> apiResult = pushApi.pushToSingleByCid(pushDTO);
         if (apiResult.isSuccess()) {
-            log.info("clientId:{},result:{}",clientId,apiResult.getData());
-            System.out.println();
+            log.info("clientId:{},result:{},receiveId:{}",clientId,apiResult.getData(),receiveId);
         } else {
-            log.info("code:" + apiResult.getCode() + ", msg: " + apiResult.getMsg());
+            log.info("code:" + apiResult.getCode() + ", msg: " + apiResult.getMsg() + ",receiveId:",receiveId);
         }
     }
 }

@@ -152,7 +152,7 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                                 params.put("receiverId",receiverId);
                                 JsonObject resultJson = HttpConnectionPoolUtil.post(sendMessageUrl + "sendMessage/", params);
                                 logger.info("sendMessage to "+receiverId+ " resp==>"+resultJson.toString());
-                                if (!ResultConstant.SUCCESS_CODE.equals(resultJson.get("code").getAsString())){
+                                if (resultJson.get("code").getAsInt()!=200){
                                     //插入离线消息
                                     insertOfflineMsg(message, receiverId);
                                     isPush = true;
@@ -170,15 +170,7 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                         if (isPush){
                             //推送服务
                             //调svc服务获取cid
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("userId",receiverId);
-                            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(istConfig.getIstSvcUrl()+ CodeConstant.IstSvc.USER_QUERY_CLIENT_ID, jsonObject, String.class);
-                            String body = stringResponseEntity.getBody();
-                            JSONObject bodyJsonObject = JSONObject.parseObject(body);
-                            if (ResultConstant.SUCCESS_CODE.equals(bodyJsonObject.getString("code")) && StringUtils.isNotBlank(bodyJsonObject.getString("data"))){
-                                String clientId = bodyJsonObject.getString("data");
-                                pushApi.push(clientId,1);
-                            }
+                            pushApiContent(message, receiverId);
                         }
                     }
 //                }else{
@@ -191,18 +183,34 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                     if (receiverIdArray == null || receiverIdArray.size() == 0) {
                         logger.warn("sendMessage message:" + jsonObject.toJSONString() + ",is no receiverId");
                     } else {
+                        boolean isPush = false;
                         for (int i = 0; i < receiverIdArray.size(); i++) {
-                            String receiverId = receiverIdArray.get(i).toString();
+                            String receiverId = receiverIdArray.getString(i);
+                            if ("null".equals(receiverIdArray.get(i))){
+                                continue;
+                            }
                             String sendMessageUrl = (String) redisUtil.get(RedisKeyUtil.getUIDWebSocketURL(receiverId));
                             if (StringUtils.isNotBlank(sendMessageUrl)){
                                 String result = HttpClientUtil.doPost(sendMessageUrl + "sendMessage/", message, receiverId);
                                 logger.info("sendMessage to " + receiverId + " resp==>" + result);
+                                JSONObject jsonObject1 = JSONObject.parseObject(result);
+                                if (jsonObject1.getInteger("code")!=200){
+                                    //插入离线消息
+                                    insertOfflineMsg(message, receiverId);
+                                    isPush = true;
+                                }
                             }else{
+                                isPush = true;
                                 try {
                                     getMsgFromJson(jsonObject,MessageEnum.MsgStatus.NOT_DELIVERY.getStatus(),receiverId);
                                 } catch (Exception e) {
                                     logger.error("insert offline err:",e);
                                 }
+                            }
+                            if (isPush){
+                                //推送服务
+                                //调svc服务获取cid
+                                pushApiContent(message, receiverId);
                             }
                         }
                     }
@@ -212,6 +220,29 @@ public class ChatServiceImpl extends BaseServiceImpl implements ChatService, App
                 }
             }
         }
+    }
+
+    public void pushApiContent(String message, String receiverId) {
+        try {
+            JSONObject jsonObject2 = new JSONObject();
+            jsonObject2.put("userId", receiverId);
+            ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(istConfig.getIstSvcUrl() + CodeConstant.IstSvc.USER_QUERY_CLIENT_ID, jsonObject2, String.class);
+            String body = stringResponseEntity.getBody();
+            JSONObject bodyJsonObject = JSONObject.parseObject(body);
+            if (ResultConstant.SUCCESS_CODE.equals(bodyJsonObject.getString("code")) && StringUtils.isNotBlank(bodyJsonObject.getString("data"))) {
+                String clientId = bodyJsonObject.getString("data");
+                if (pushApi!=null){
+                    pushApi.push(clientId, 1, message,receiverId);
+                }else {
+                    logger.warn("pushApi is null,receiveId:" + receiverId);
+                }
+            }else{
+                logger.warn("");
+            }
+        }catch (Exception e){
+            logger.warn("pushApiContent.err:",e);
+        }
+
     }
 
     @Async("asyncServiceExecutor")
